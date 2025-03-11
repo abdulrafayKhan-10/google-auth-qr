@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Google Authenticator QR</title>
+</head>
+<body>
+    <h2>Scan this QR Code with Google Authenticator</h2>
+    <img id="qrcode" src="" alt="QR Code">
+    
+    <h3>Enter OTP</h3>
+    <input type="text" id="otp" placeholder="Enter 6-digit OTP">
+    <button onclick="verifyOTP()">Verify OTP</button>
+
+    <p id="message"></p>
+
+    <script>
+        const userId = "testUser123"; // In production, use a real user ID
+
+        // Fetch QR Code from backend
+        fetch(`http://localhost:5000/auth/generate-qr?userId=${userId}`)
+            .then(res => res.json())
+            .then(data => {
+                document.getElementById("qrcode").src = data.qrCodeUrl;
+                localStorage.setItem("secret", data.secret); // Store secret for testing
+            });
+
+        // Verify OTP
+        function verifyOTP() {
+            const token = document.getElementById("otp").value;
+            fetch("http://localhost:5000/auth/verify-otp", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ userId, token }),
+            })
+            .then(res => res.json())
+            .then(data => document.getElementById("message").innerText = data.message)
+            .catch(err => console.error(err));
+        }
+    </script>
+</body>
+</html>
